@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registros - Ovitrampas</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header>
+    <h1>📋 Registros de Ovitrampas</h1>
+    <nav>
+      <a href="index.html">Mapa</a>
+      <a href="registros.html" class="active">Registros</a>
+    </nav>
+  </header>
+
+  <main class="contenedor-tabla">
+    <div class="barra-acciones">
+      <input type="search" id="buscar" placeholder="🔍 Buscar por nombre...">
+      <input type="date" id="f-desde" title="Desde">
+      <input type="date" id="f-hasta" title="Hasta">
+      <input type="number" id="f-casos" placeholder="Casos mín." min="0" title="Casos mínimos">
+      <select id="f-riesgo">
+        <option value="">Riesgo: Todos</option>
+        <option value="alto">🔴 Alto (≥5)</option>
+        <option value="medio">🟠 Medio (3-4)</option>
+        <option value="bajo">🟢 Bajo (≤2)</option>
+      </select>
+      <button id="btn-limpiar-filtros">🧹</button>
+      <button id="btn-recargar">🔄</button>
+      <button id="btn-exportar-csv">⬇ CSV</button>
+      <span id="contador"></span>
+    </div>
+    <div class="tabla-wrapper">
+      <table id="tabla-registros">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Nombre</th>
+            <th>Latitud</th>
+            <th>Longitud</th>
+            <th>Casos</th>
+            <th>Fecha</th>
+            <th>Notas</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </main>
+
+  <script src="js/registros.js"></script>
+</body>
+</html>
