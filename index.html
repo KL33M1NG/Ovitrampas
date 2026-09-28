@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mapa de Ovitrampas - Dengue</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header>
+    <h1>🦟 Mapa de Calor - Ovitrampas (Dengue)</h1>
+    <nav>
+      <a href="index.html" class="active">Mapa</a>
+      <a href="registros.html">Registros</a>
+    </nav>
+  </header>
+
+  <main class="contenedor">
+    <aside class="panel">
+      <h2>Nuevo punto</h2>
+      <form id="form-punto">
+        <label>Nombre del punto:
+          <input type="text" id="nombre" placeholder="Ej: Ovitrampa Norte 01" required>
+        </label>
+        <label>Latitud:
+          <input type="number" step="any" id="lat" placeholder="-34.6037" required>
+        </label>
+        <label>Longitud:
+          <input type="number" step="any" id="lng" placeholder="-58.3816" required>
+        </label>
+        <label>Casos detectados:
+          <input type="number" id="casos" min="1" value="1" required>
+        </label>
+        <label>Fecha:
+          <input type="date" id="fecha" required>
+        </label>
+        <label>Notas (opcional):
+          <textarea id="notas" rows="2"></textarea>
+        </label>
+        <button type="submit">➕ Agregar punto</button>
+        <button type="button" id="btn-ubicacion">📍 Usar mi ubicación</button>
+      </form>
+
+      <div class="controles">
+        <h3>🔍 Filtros</h3>
+        <label>Buscar por nombre:
+          <input type="search" id="filtro-texto" placeholder="Ej: Norte...">
+        </label>
+        <label>Desde:
+          <input type="date" id="filtro-desde">
+        </label>
+        <label>Hasta:
+          <input type="date" id="filtro-hasta">
+        </label>
+        <label>Casos mínimos:
+          <input type="number" id="filtro-casos" min="0" placeholder="0">
+        </label>
+        <label>Nivel de riesgo:
+          <select id="filtro-riesgo">
+            <option value="">Todos</option>
+            <option value="alto">🔴 Alto (≥5 casos)</option>
+            <option value="medio">🟠 Medio (3-4)</option>
+            <option value="bajo">🟢 Bajo (≤2)</option>
+          </select>
+        </label>
+        <button type="button" id="limpiar-filtros">🧹 Limpiar filtros</button>
+      </div>
+
+      <div class="controles">
+        <h3>Visualización</h3>
+        <label><input type="checkbox" id="toggle-heat" checked> Mapa de calor</label>
+        <label><input type="checkbox" id="toggle-markers" checked> Marcadores</label>
+      </div>
+
+      <div class="controles">
+        <h3>Datos</h3>
+        <div id="estado-conexion" class="online">🟢 Conectado</div>
+        <div id="contador-mapa" class="contador">0 puntos</div>
+        <button id="btn-sync">🔄 Sincronizar</button>
+        <button id="btn-export">⬇ Exportar JSON</button>
+        <button id="btn-import">⬆ Importar JSON</button>
+        <input type="file" id="file-import" accept=".json" hidden>
+        <button id="btn-limpiar" class="peligro">🗑 Borrar todo</button>
+      </div>
+    </aside>
+
+    <div id="map"></div>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+  <script src="js/mapa.js"></script>
+</body>
+</html>
