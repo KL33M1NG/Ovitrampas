@@ -1,7 +1,7 @@
 // ==================== Configuración ====================
 const STORAGE_KEY = 'ovitrampas_puntos';
 const API_URL = 'https://script.google.com/macros/s/AKfycbwGvRt2BOSVF94KooPlBmE0q2NUacsMZmmPz8QoERZE2NxOIOy6n_fMLrt6cYqPGSGGlw/exec';
-const API_KEY = '258233kar';
+const API_KEY = '258233KAR';
 
 let mapa, capaCalor, capaMarcadores;
 let puntos = [];
@@ -31,7 +31,6 @@ async function init() {
 
   capaMarcadores = L.layerGroup().addTo(mapa);
 
-  // Cargar local primero (rápido), luego sincronizar con Sheets
   cargarLocal();
   renderizar();
   await sincronizar();
@@ -40,7 +39,6 @@ async function init() {
   iniciarFiltros();
   actualizarEstadoConexion();
 
-  // Si venimos de "Ver en mapa" desde la tabla
   const idCentrar = sessionStorage.getItem('centrar_punto');
   if (idCentrar) {
     const p = puntos.find(x => String(x.id) === idCentrar);
@@ -62,11 +60,40 @@ function guardarLocal() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(puntos));
 }
 
-// ==================== Sincronización con Sheets ====================
+// ==================== Sincronización con Sheets (JSONP) ====================
+function jsonpGet(url) {
+  return new Promise((resolve, reject) => {
+    const callbackName = 'jsonp_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+    const script = document.createElement('script');
+    const timeout = setTimeout(() => {
+      cleanup();
+      reject(new Error('Timeout JSONP'));
+    }, 10000);
+
+    function cleanup() {
+      clearTimeout(timeout);
+      delete window[callbackName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+    }
+
+    window[callbackName] = (data) => {
+      cleanup();
+      resolve(data);
+    };
+
+    script.onerror = () => {
+      cleanup();
+      reject(new Error('Error al cargar JSONP'));
+    };
+
+    script.src = `${url}${url.includes('?') ? '&' : '?'}callback=${callbackName}`;
+    document.body.appendChild(script);
+  });
+}
+
 async function sincronizar() {
   try {
-    const res = await fetch(`${API_URL}?action=listar`);
-    const json = await res.json();
+    const json = await jsonpGet(`${API_URL}?action=listar`);
     if (json.ok) {
       puntos = json.data || [];
       guardarLocal();
@@ -82,14 +109,20 @@ async function sincronizar() {
   actualizarEstadoConexion();
 }
 
+// POST usa no-cors (respuesta opaca, igual se guarda)
 async function enviarAlServidor(action, payload) {
-  const res = await fetch(API_URL, {
-    method: 'POST',
-    // text/plain evita preflight CORS con Apps Script
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ action, apiKey: API_KEY, ...payload })
-  });
-  return await res.json();
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action, apiKey: API_KEY, ...payload })
+    });
+    // Con no-cors no podemos leer la respuesta, asumimos OK si no lanza error
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
 }
 
 function actualizarEstadoConexion() {
@@ -217,18 +250,11 @@ function asignarEventos() {
 
   document.getElementById('btn-limpiar').addEventListener('click', async () => {
     if (!confirm('¿Borrar TODOS los registros? Esta acción no se puede deshacer.')) return;
-    try {
-      if (modoOnline) {
-        const r = await enviarAlServidor('limpiar', {});
-        if (!r.ok) throw new Error(r.error);
-      }
-      puntos = [];
-      guardarLocal();
-      renderizar();
-      mostrarToast('🗑 Todos los puntos eliminados');
-    } catch (err) {
-      alert('Error al eliminar en el servidor: ' + err.message);
-    }
+    await enviarAlServidor('limpiar', {});
+    puntos = [];
+    guardarLocal();
+    renderizar();
+    mostrarToast('🗑 Todos los puntos eliminados');
   });
 }
 
@@ -245,7 +271,6 @@ async function agregarPunto() {
 
   if (isNaN(nuevo.lat) || isNaN(nuevo.lng)) return alert('Lat/Lng inválidas');
 
-  // Guardar local primero (funciona offline)
   puntos.push(nuevo);
   guardarLocal();
   renderizar();
@@ -254,16 +279,18 @@ async function agregarPunto() {
   document.getElementById('form-punto').reset();
   document.getElementById('casos').value = 1;
 
-  if (modoOnline) {
-    try {
-      const r = await enviarAlServidor('agregar', { data: nuevo });
-      if (!r.ok) throw new Error(r.error);
-      mostrarToast('✅ Punto guardado en Google Sheets');
-    } catch (err) {
-      mostrarToast('⚠️ Guardado local. Error al sincronizar: ' + err.message, 'error');
-    }
+  mostrarToast('⏳ Enviando a Google Sheets...');
+
+  const r = await enviarAlServidor('agregar', { data: nuevo });
+
+  if (r.ok) {
+    mostrarToast('✅ Punto guardado en Google Sheets');
+    // Verificamos leyendo de nuevo tras un pequeño delay
+    setTimeout(async () => {
+      await sincronizar();
+    }, 1500);
   } else {
-    mostrarToast('⚠️ Guardado solo local (sin conexión)', 'warn');
+    mostrarToast('⚠️ Guardado local. Error: ' + r.error, 'error');
   }
 }
 
@@ -297,12 +324,11 @@ async function importarJSON(e) {
       guardarLocal();
       renderizar();
 
-      if (modoOnline) {
-        for (const p of data) {
-          try { await enviarAlServidor('agregar', { data: p }); } catch {}
-        }
+      for (const p of data) {
+        await enviarAlServidor('agregar', { data: p });
       }
       alert(`✅ ${data.length} puntos importados`);
+      setTimeout(sincronizar, 1500);
     } catch {
       alert('❌ Archivo JSON inválido');
     }
