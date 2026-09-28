@@ -4,14 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Registros - Ovitrampas</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦟</text></svg>">
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
   <header>
     <h1>📋 Registros de Ovitrampas</h1>
     <nav>
+      <a href="inicio.html">Inicio</a>
       <a href="index.html">Mapa</a>
       <a href="registros.html" class="active">Registros</a>
+      <button id="btn-ayuda-header" title="Ver tutorial">❓</button>
     </nav>
   </header>
 
@@ -51,6 +54,29 @@
     </div>
   </main>
 
+  <!-- Modal de ayuda (desde botón ❓) -->
+  <div id="modal-tutorial" class="modal-overlay oculto">
+    <div class="modal-contenido">
+      <button class="modal-cerrar" id="modal-cerrar">✕</button>
+      <div class="modal-header">
+        <h2>📖 Ayuda rápida</h2>
+      </div>
+      <div class="modal-body">
+        <p>Para ver el tutorial completo, andá a la pestaña <a href="inicio.html"><strong>Inicio</strong></a>.</p>
+        <ul>
+          <li><strong>Ver:</strong> te lleva al mapa centrado en el punto.</li>
+          <li><strong>Eliminar:</strong> borra el registro en Google Sheets.</li>
+          <li><strong>⬇ CSV:</strong> exporta los registros filtrados.</li>
+          <li><strong>🔄:</strong> recarga los datos desde el servidor.</li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <a href="inicio.html" class="btn-primario" style="text-decoration:none; text-align:center;">Ver tutorial completo →</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/inicio.js"></script>
   <script src="js/registros.js"></script>
 </body>
 </html>
