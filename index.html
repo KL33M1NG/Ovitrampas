@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mapa de Ovitrampas - Dengue</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦟</text></svg>">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
@@ -11,8 +12,10 @@
   <header>
     <h1>🦟 Mapa de Calor - Ovitrampas (Dengue)</h1>
     <nav>
+      <a href="inicio.html">Inicio</a>
       <a href="index.html" class="active">Mapa</a>
       <a href="registros.html">Registros</a>
+      <button id="btn-ayuda-header" title="Ver tutorial">❓</button>
     </nav>
   </header>
 
@@ -88,8 +91,31 @@
     <div id="map"></div>
   </main>
 
+  <!-- Modal de ayuda (desde botón ❓) -->
+  <div id="modal-tutorial" class="modal-overlay oculto">
+    <div class="modal-contenido">
+      <button class="modal-cerrar" id="modal-cerrar">✕</button>
+      <div class="modal-header">
+        <h2>📖 Ayuda rápida</h2>
+      </div>
+      <div class="modal-body">
+        <p>Para ver el tutorial completo, andá a la pestaña <a href="inicio.html"><strong>Inicio</strong></a>.</p>
+        <ul>
+          <li><strong>Agregar punto:</strong> completá el formulario del panel izquierdo.</li>
+          <li><strong>Mapa de calor:</strong> los colores van de azul (pocos casos) a rojo (muchos).</li>
+          <li><strong>Filtros:</strong> usá los campos de fecha, casos y riesgo.</li>
+          <li><strong>Sincronizar:</strong> clic en 🔄 para traer los últimos datos del servidor.</li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <a href="inicio.html" class="btn-primario" style="text-decoration:none; text-align:center;">Ver tutorial completo →</a>
+      </div>
+    </div>
+  </div>
+
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+  <script src="js/inicio.js"></script>
   <script src="js/mapa.js"></script>
 </body>
 </html>
