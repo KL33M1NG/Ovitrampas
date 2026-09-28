@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inicio - Ovitrampas</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦟</text></svg>">
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header>
+    <h1>🦟 Sistema de Ovitrampas - Dengue</h1>
+    <nav>
+      <a href="inicio.html" class="active">Inicio</a>
+      <a href="index.html">Mapa</a>
+      <a href="registros.html">Registros</a>
+      <button id="btn-ayuda-header" title="Ver tutorial">❓</button>
+    </nav>
+  </header>
+
+  <main class="contenedor-inicio">
+    <section class="hero">
+      <h2>Bienvenido al Sistema de Vigilancia de Ovitrampas</h2>
+      <p class="subtitulo">
+        Herramienta para el registro georreferenciado de ovitrampas y detección temprana
+        del mosquito <em>Aedes aegypti</em>, transmisor del dengue.
+      </p>
+      <div class="hero-botones">
+        <a href="index.html" class="btn-primario">🗺️ Ir al Mapa</a>
+        <a href="registros.html" class="btn-secundario">📋 Ver Registros</a>
+        <button id="btn-ver-tutorial" class="btn-secundario">📖 Ver Tutorial</button>
+      </div>
+    </section>
+
+    <section class="tutorial-resumen">
+      <h2>📌 Guía rápida de uso</h2>
+      <div class="pasos-grid">
+        <div class="paso">
+          <div class="paso-num">1</div>
+          <h3>Registrar un punto</h3>
+          <p>Andá a la pestaña <strong>Mapa</strong>, completá nombre, latitud, longitud, cantidad de casos y fecha.</p>
+        </div>
+        <div class="paso">
+          <div class="paso-num">2</div>
+          <h3>Guardar online</h3>
+          <p>El punto se guarda automáticamente en <strong>Google Sheets</strong>. Todos los usuarios lo verán en tiempo real.</p>
+        </div>
+        <div class="paso">
+          <div class="paso-num">3</div>
+          <h3>Ver el mapa de calor</h3>
+          <p>Las zonas con más casos se pintan en rojo. Menos casos, tonos azules/verdes.</p>
+        </div>
+        <div class="paso">
+          <div class="paso-num">4</div>
+          <h3>Filtrar y analizar</h3>
+          <p>Usá filtros por <strong>fecha, riesgo y nombre</strong> para ver solo lo que te interesa.</p>
+        </div>
+        <div class="paso">
+          <div class="paso-num">5</div>
+          <h3>Exportar datos</h3>
+          <p>Descargá todo como <strong>JSON</strong> o <strong>CSV</strong> para análisis externo o respaldo.</p>
+        </div>
+        <div class="paso">
+          <div class="paso-num">6</div>
+          <h3>Trabajar offline</h3>
+          <p>Sin internet, los datos se guardan localmente y se sincronizan al reconectar.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="leyenda-riesgo">
+      <h2>🎨 Niveles de riesgo</h2>
+      <div class="leyenda-grid">
+        <div class="leyenda-item bajo">
+          <span class="circulo"></span>
+          <div>
+            <strong>Bajo</strong>
+            <p>≤ 2 casos detectados</p>
+          </div>
+        </div>
+        <div class="leyenda-item medio">
+          <span class="circulo"></span>
+          <div>
+            <strong>Medio</strong>
+            <p>3 a 4 casos detectados</p>
+          </div>
+        </div>
+        <div class="leyenda-item alto">
+          <span class="circulo"></span>
+          <div>
+            <strong>Alto</strong>
+            <p>≥ 5 casos detectados</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="info-tecnica">
+      <h2>ℹ️ Información del sistema</h2>
+      <ul>
+        <li>🌐 <strong>Funciona online 24/7</strong> vía GitHub Pages</li>
+        <li>☁️ <strong>Datos centralizados</strong> en Google Sheets (compartidos entre todos los usuarios)</li>
+        <li>💾 <strong>Respaldo local automático</strong> en el navegador (offline-first)</li>
+        <li>🔒 <strong>Acceso protegido</strong> con clave de API</li>
+        <li>📱 <strong>Diseño responsive</strong> — funciona en PC, tablet y celular</li>
+      </ul>
+    </section>
+  </main>
+
+  <!-- Modal de tutorial -->
+  <div id="modal-tutorial" class="modal-overlay oculto">
+    <div class="modal-contenido">
+      <button class="modal-cerrar" id="modal-cerrar">✕</button>
+
+      <div class="modal-header">
+        <h2>📖 Tutorial completo</h2>
+        <p>Cómo usar el sistema de ovitrampas paso a paso</p>
+      </div>
+
+      <div class="modal-body">
+        <div class="tutorial-seccion">
+          <h3>🗺️ 1. Cómo registrar un nuevo punto</h3>
+          <ol>
+            <li>Hacé clic en la pestaña <strong>Mapa</strong> en el menú superior.</li>
+            <li>En el panel izquierdo, completá el formulario:
+              <ul>
+                <li><strong>Nombre del punto:</strong> identificador único (ej: "Ovitrampa Norte 01").</li>
+                <li><strong>Latitud:</strong> coordenada en formato decimal (ej: -34.6037).</li>
+                <li><strong>Longitud:</strong> coordenada en formato decimal (ej: -58.3816).</li>
+                <li><strong>Casos detectados:</strong> cantidad de huevos/larvas encontrados.</li>
+                <li><strong>Fecha:</strong> cuándo se hizo la inspección.</li>
+                <li><strong>Notas:</strong> observaciones opcionales.</li>
+              </ul>
+            </li>
+            <li>Clic en <strong>➕ Agregar punto</strong>.</li>
+            <li>El punto se guarda automáticamente en <strong>Google Sheets</strong> y aparece en el mapa.</li>
+          </ol>
+          <div class="tip">
+            💡 <strong>Tip:</strong> Si estás en el lugar, usá el botón <strong>📍 Usar mi ubicación</strong> para autocompletar las coordenadas.
+          </div>
+        </div>
+
+        <div class="tutorial-seccion">
+          <h3>🔥 2. Cómo interpretar el mapa de calor</h3>
+          <ul>
+            <li>Los colores van del <strong>azul</strong> (pocos casos) al <strong>rojo</strong> (muchos casos).</li>
+            <li>Podés activar/desactivar el mapa de calor o los marcadores con los checkboxes del panel.</li>
+            <li>Hacé clic en cualquier marcador para ver los detalles del punto.</li>
+          </ul>
+        </div>
+
+        <div class="tutorial-seccion">
+          <h3>🔍 3. Cómo usar los filtros</h3>
+          <ul>
+            <li><strong>Buscar por nombre:</strong> escribe parte del nombre del punto.</li>
+            <li><strong>Desde / Hasta:</strong> rango de fechas de inspección.</li>
+            <li><strong>Casos mínimos:</strong> muestra solo puntos con esa cantidad o más.</li>
+            <li><strong>Nivel de riesgo:</strong> filtra por bajo, medio o alto.</li>
+            <li>Clic en <strong>🧹 Limpiar filtros</strong> para resetear todo.</li>
+          </ul>
+        </div>
+
+        <div class="tutorial-seccion">
+          <h3>📋 4. Cómo gestionar los registros</h3>
+          <ol>
+            <li>Andá a la pestaña <strong>Registros</strong>.</li>
+            <li>Vas a ver una tabla con todos los puntos cargados.</li>
+            <li>Usá el buscador y filtros superiores para encontrar registros.</li>
+            <li>Botón <strong>Ver</strong>: te lleva al mapa y centra ese punto.</li>
+            <li>Botón <strong>Eliminar</strong>: borra el punto (también en Google Sheets).</li>
+            <li>Botón <strong>⬇ CSV</strong>: descarga los registros filtrados en Excel/Sheets.</li>
+          </ol>
+        </div>
+
+        <div class="tutorial-seccion">
+          <h3>💾 5. Respaldo y exportación</h3>
+          <ul>
+            <li><strong>⬇ Exportar JSON:</strong> descarga TODOS los puntos como respaldo.</li>
+            <li><strong>⬆ Importar JSON:</strong> carga puntos desde un archivo.</li>
+            <li><strong>🔄 Sincronizar:</strong> fuerza recarga desde Google Sheets.</li>
+            <li><strong>🗑 Borrar todo:</strong> elimina todos los puntos (¡cuidado!).</li>
+          </ul>
+        </div>
+
+        <div class="tutorial-seccion">
+          <h3>🌐 6. Modo offline</h3>
+          <p>
+            Si te quedás sin internet, el sistema sigue funcionando con los datos locales.
+            Cuando vuelvas a conectarte, hacé clic en <strong>🔄 Sincronizar</strong> para
+            traer los últimos cambios del servidor.
+          </p>
+        </div>
+
+        <div class="tutorial-seccion">
+          <h3>🎨 7. Niveles de riesgo</h3>
+          <ul>
+            <li>🟢 <strong>Bajo:</strong> ≤ 2 casos → vigilancia normal.</li>
+            <li>🟠 <strong>Medio:</strong> 3-4 casos → reforzar control.</li>
+            <li>🔴 <strong>Alto:</strong> ≥ 5 casos → intervención inmediata.</li>
+          </ul>
+        </div>
+
+        <div class="tutorial-seccion">
+          <h3>❓ 8. Preguntas frecuentes</h3>
+          <details>
+            <summary>¿Los datos se comparten entre dispositivos?</summary>
+            <p>Sí, se guardan en Google Sheets. Cualquier persona que abra la página verá los mismos datos.</p>
+          </details>
+          <details>
+            <summary>¿Qué pasa si borro la caché del navegador?</summary>
+            <p>Los datos siguen seguros en Google Sheets. Al recargar la página se descargan de nuevo.</p>
+          </details>
+          <details>
+            <summary>¿Puedo usar coordenadas en formato DMS?</summary>
+            <p>No directamente. Convertí primero a decimal. Ejemplo: 34°36'13"S → -34.6037</p>
+          </details>
+          <details>
+            <summary>¿Cuántos puntos puedo cargar?</summary>
+            <p>Google Sheets soporta hasta 10 millones de celdas. Sin límite práctico para este uso.</p>
+          </details>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <label class="check-no-mostrar">
+          <input type="checkbox" id="no-mostrar">
+          No volver a mostrar al iniciar
+        </label>
+        <button id="modal-cerrar-footer" class="btn-primario">Entendido ✓</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/inicio.js"></script>
+</body>
+</html>
