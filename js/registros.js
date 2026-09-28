@@ -1,16 +1,46 @@
 // ==================== Configuración ====================
 const STORAGE_KEY = 'ovitrampas_puntos';
 const API_URL = 'https://script.google.com/macros/s/AKfycbwGvRt2BOSVF94KooPlBmE0q2NUacsMZmmPz8QoERZE2NxOIOy6n_fMLrt6cYqPGSGGlw/exec';
-const API_KEY = '258233kar';
+const API_KEY = '258233KAR';
 
 let puntos = [];
 let filtrados = [];
 
+// ==================== JSONP ====================
+function jsonpGet(url) {
+  return new Promise((resolve, reject) => {
+    const callbackName = 'jsonp_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+    const script = document.createElement('script');
+    const timeout = setTimeout(() => {
+      cleanup();
+      reject(new Error('Timeout JSONP'));
+    }, 10000);
+
+    function cleanup() {
+      clearTimeout(timeout);
+      delete window[callbackName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+    }
+
+    window[callbackName] = (data) => {
+      cleanup();
+      resolve(data);
+    };
+
+    script.onerror = () => {
+      cleanup();
+      reject(new Error('Error al cargar JSONP'));
+    };
+
+    script.src = `${url}${url.includes('?') ? '&' : '?'}callback=${callbackName}`;
+    document.body.appendChild(script);
+  });
+}
+
 // ==================== Sincronización ====================
 async function sincronizar() {
   try {
-    const res = await fetch(`${API_URL}?action=listar`);
-    const json = await res.json();
+    const json = await jsonpGet(`${API_URL}?action=listar`);
     if (json.ok) {
       puntos = json.data || [];
       localStorage.setItem(STORAGE_KEY, JSON.stringify(puntos));
@@ -92,14 +122,13 @@ function verEnMapa(id) {
 async function eliminar(id) {
   if (!confirm('¿Eliminar este registro?')) return;
 
-  // Eliminar local
   puntos = puntos.filter(p => String(p.id) !== String(id));
   localStorage.setItem(STORAGE_KEY, JSON.stringify(puntos));
 
-  // Eliminar en Sheets
   try {
     await fetch(API_URL, {
       method: 'POST',
+      mode: 'no-cors',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({ action: 'eliminar', apiKey: API_KEY, id })
     });
