@@ -814,11 +814,12 @@ td.acciones button {
 
 #map-reporte {
   width: 100%;
-  flex: 1;
+  height: 70vh;
   min-height: 500px;
   border-radius: 10px;
   box-shadow: 0 4px 14px rgba(0,0,0,.1);
   border: 3px solid white;
+  background: #e8eef2;
 }
 
 /* Responsive reportes */
