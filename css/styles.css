@@ -637,3 +637,193 @@ td.acciones button {
   .modal-footer .btn-primario { width: 100%; }
   nav a { padding: 6px 10px; font-size: .85rem; }
 }
+
+/* ============================================================
+   PÁGINA DE REPORTES
+   ============================================================ */
+.contenedor-reportes {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+.panel-reportes {
+  background: white;
+  padding: 20px;
+  overflow-y: auto;
+  border-right: 1px solid #ddd;
+  max-height: calc(100vh - 65px);
+}
+
+.panel-reportes h2 {
+  color: #1b4965;
+  font-size: 1.1rem;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #62b6cb;
+}
+
+.grupo-config {
+  margin-bottom: 22px;
+  padding-bottom: 18px;
+  border-bottom: 1px dashed #e0e0e0;
+}
+.grupo-config:last-of-type { border-bottom: none; }
+
+.grupo-config h3 {
+  color: #1b4965;
+  font-size: .95rem;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.grupo-config label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: .86rem;
+  color: #444;
+  font-weight: 500;
+}
+
+.grupo-config input[type="text"],
+.grupo-config input[type="search"],
+.grupo-config input[type="date"],
+.grupo-config input[type="number"],
+.grupo-config select,
+.grupo-config textarea {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: .88rem;
+  margin-top: 3px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.grupo-config input:focus,
+.grupo-config textarea:focus,
+.grupo-config select:focus {
+  outline: none;
+  border-color: #62b6cb;
+  box-shadow: 0 0 0 3px rgba(98,182,203,.2);
+}
+
+.check-opcion {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 6px 0;
+}
+.check-opcion input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #1b4965;
+  margin: 0;
+}
+
+.controles-acciones {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 2px solid #1b4965;
+}
+
+.contador-rep {
+  text-align: center;
+  font-weight: 600;
+  color: #1b4965;
+  padding: 10px;
+  background: #e8f1f5;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-size: .9rem;
+}
+
+.btn-accion-primario {
+  width: 100%;
+  padding: 12px;
+  background: #1b4965;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: .95rem;
+  cursor: pointer;
+  transition: background .2s, transform .15s;
+  margin-bottom: 8px;
+}
+.btn-accion-primario:hover:not(:disabled) {
+  background: #2a6f97;
+  transform: translateY(-1px);
+}
+.btn-accion-primario:disabled {
+  opacity: .6;
+  cursor: wait;
+}
+
+.btn-accion-secundario {
+  width: 100%;
+  padding: 10px;
+  background: #f0f0f0;
+  color: #1b4965;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: .9rem;
+  cursor: pointer;
+  transition: background .2s;
+}
+.btn-accion-secundario:hover { background: #e0e8ec; }
+
+.btn-secundario-claro {
+  background: #f0f0f0;
+  color: #1b4965;
+  border: 1px solid #ccc;
+  padding: 8px;
+  font-weight: 600;
+  font-size: .85rem;
+  margin-top: 4px;
+}
+.btn-secundario-claro:hover { background: #e0e8ec; }
+
+/* Vista previa */
+.vista-previa {
+  display: flex;
+  flex-direction: column;
+  padding: 20px 24px;
+  background: #f4f6f8;
+  min-height: 0;
+}
+
+.vista-header {
+  margin-bottom: 12px;
+}
+.vista-header h2 {
+  color: #1b4965;
+  font-size: 1.15rem;
+  margin-bottom: 4px;
+}
+.info-vista {
+  font-size: .85rem;
+  color: #666;
+}
+
+#map-reporte {
+  width: 100%;
+  flex: 1;
+  min-height: 500px;
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(0,0,0,.1);
+  border: 3px solid white;
+}
+
+/* Responsive reportes */
+@media (max-width: 900px) {
+  .contenedor-reportes { grid-template-columns: 1fr; }
+  .panel-reportes { border-right: none; border-bottom: 1px solid #ddd; max-height: none; }
+  #map-reporte { min-height: 400px; }
+}
