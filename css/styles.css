@@ -797,6 +797,7 @@ td.acciones button {
   padding: 20px 24px;
   background: #f4f6f8;
   min-height: 0;
+  overflow: hidden;
 }
 
 .vista-header {
@@ -826,5 +827,5 @@ td.acciones button {
 @media (max-width: 900px) {
   .contenedor-reportes { grid-template-columns: 1fr; }
   .panel-reportes { border-right: none; border-bottom: 1px solid #ddd; max-height: none; }
-  #map-reporte { min-height: 400px; }
+  #map-reporte { height: 60vh; min-height: 400px; }
 }
