@@ -41,10 +41,15 @@ async function sincronizar() {
 }
 
 // ==================== Init ====================
+// ==================== Init ====================
 async function init() {
   await sincronizar();
 
-  mapa = L.map('map-reporte').setView([-34.6037, -58.3816], 6);
+  // Crear mapa
+  mapa = L.map('map-reporte', {
+    zoomControl: true,
+    preferCanvas: true
+  }).setView([-34.6037, -58.3816], 6);
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
@@ -58,9 +63,19 @@ async function init() {
 
   capaMarcadores = L.layerGroup().addTo(mapa);
 
-  renderizarMapa();
+  // Forzar cálculo de tamaño DESPUÉS de que el DOM esté listo
+  setTimeout(() => {
+    mapa.invalidateSize();
+    renderizarMapa();
+    ajustarVista();
+  }, 200);
+
+  // Segundo invalidate por las dudas (algunos navegadores tardan más)
+  setTimeout(() => {
+    mapa.invalidateSize();
+  }, 800);
+
   asignarEventos();
-  ajustarVista();
 }
 
 // ==================== Render mapa ====================
@@ -91,6 +106,8 @@ function renderizarMapa() {
   capaMarcadores.clearLayers();
   const heatData = [];
 
+  console.log('🎯 Renderizando mapa con', filtrados.length, 'puntos de', puntos.length, 'totales');
+
   filtrados.forEach(p => {
     const intensidad = Math.min(1, (p.casos || 1) / 10);
     heatData.push([p.lat, p.lng, Math.max(0.3, intensidad)]);
@@ -113,13 +130,6 @@ function renderizarMapa() {
 
   capaCalor.setLatLngs(heatData);
 }
-
-function ajustarVista() {
-  if (filtrados.length === 0) return;
-  const bounds = L.latLngBounds(filtrados.map(p => [p.lat, p.lng]));
-  mapa.fitBounds(bounds, { padding: [30, 30], maxZoom: 15 });
-}
-
 // ==================== Eventos ====================
 function asignarEventos() {
   ['rep-desde','rep-hasta','rep-casos','rep-texto','rep-riesgo'].forEach(id => {
@@ -145,24 +155,30 @@ function asignarEventos() {
 }
 
 // ==================== Captura del mapa ====================
+// ==================== Captura del mapa ====================
 async function capturarMapa() {
   const mapEl = document.getElementById('map-reporte');
-  // Forzamos tamaño previo para captura consistente
+
+  // Asegurar que el mapa esté bien dimensionado antes de capturar
+  mapa.invalidateSize();
+  await new Promise(r => setTimeout(r, 500)); // esperar tiles
+
   const canvas = await html2canvas(mapEl, {
     useCORS: true,
     allowTaint: false,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#e8eef2',
     scale: 2,
     logging: false,
+    width: mapEl.offsetWidth,
+    height: mapEl.offsetHeight,
     onclone: (doc) => {
-      // Ocultar controles de zoom en la captura
+      // Ocultar controles de zoom y atribución en la captura
       doc.querySelectorAll('.leaflet-control-zoom, .leaflet-control-attribution')
         .forEach(el => el.style.display = 'none');
     }
   });
   return canvas.toDataURL('image/png');
 }
-
 // ==================== Resumen ====================
 function calcularResumen() {
   const total = filtrados.length;
