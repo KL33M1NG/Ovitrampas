@@ -7,6 +7,83 @@ let mapa, capaCalor, capaMarcadores;
 let puntos = [];
 let modoOnline = true;
 
+// ==================== Utilidades SE ====================
+/**
+ * Calcula la SE (Semana Epidemiológica) de una fecha dada
+ * Mismo algoritmo que el Apps Script para consistencia
+ */
+function calcularSE(fecha) {
+  const d = new Date(fecha + 'T12:00:00'); // mediodía para evitar problemas de zona
+  const anio = d.getFullYear();
+  const ene1 = new Date(anio, 0, 1);
+  const diaSemanaEne1 = ene1.getDay();
+
+  let primerDomingo = new Date(ene1);
+  if (diaSemanaEne1 === 0) {
+    primerDomingo = ene1;
+  } else if (diaSemanaEne1 <= 4) {
+    primerDomingo.setDate(ene1.getDate() - diaSemanaEne1);
+  } else {
+    primerDomingo.setDate(ene1.getDate() + (7 - diaSemanaEne1));
+  }
+
+  const diffMs = d - primerDomingo;
+  const diffDias = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const se = Math.floor(diffDias / 7) + 1;
+
+  return { se, anio };
+}
+
+/**
+ * Devuelve la SE actual (hoy)
+ */
+function getSEActual() {
+  const hoy = new Date().toISOString().slice(0, 10);
+  return calcularSE(hoy);
+}
+
+/**
+ * Devuelve las últimas N semanas epidemiológicas (incluyendo la actual)
+ * Formato: [{ se, anio, label }, ...] ordenadas de la más reciente a la más vieja
+ */
+function getUltimasSE(n) {
+  const actual = getSEActual();
+  const lista = [];
+  let se = actual.se;
+  let anio = actual.anio;
+
+  for (let i = 0; i < n; i++) {
+    lista.push({
+      se,
+      anio,
+      label: `SE ${String(se).padStart(2, '0')} - ${anio}`
+    });
+    se--;
+    if (se < 1) {
+      anio--;
+      se = 52; // aproximado, suficiente para el filtro
+    }
+  }
+  return lista;
+}
+
+/**
+ * Formatea una SE como string legible
+ */
+function formatSE(se, anio) {
+  if (!se || !anio) return 'Sin SE';
+  return `SE ${String(se).padStart(2, '0')} - ${anio}`;
+}
+
+/**
+ * Compara si (se1, anio1) >= (se2, anio2)
+ */
+function seEsMayorOIgual(se1, anio1, se2, anio2) {
+  if (anio1 > anio2) return true;
+  if (anio1 < anio2) return false;
+  return se1 >= se2;
+}
+
 // ==================== Init ====================
 async function init() {
   mapa = L.map('map').setView([-34.6037, -58.3816], 6);
@@ -17,21 +94,15 @@ async function init() {
   }).addTo(mapa);
 
   capaCalor = L.heatLayer([], {
-    radius: 35,
-    blur: 25,
-    maxZoom: 15,
-    gradient: {
-      0.0: '#3288bd',
-      0.3: '#66c2a5',
-      0.5: '#fee08b',
-      0.7: '#f46d43',
-      1.0: '#d53e4f'
-    }
+    radius: 35, blur: 25, maxZoom: 15,
+    gradient: { 0.0:'#3288bd',0.3:'#66c2a5',0.5:'#fee08b',0.7:'#f46d43',1.0:'#d53e4f' }
   }).addTo(mapa);
 
   capaMarcadores = L.layerGroup().addTo(mapa);
 
   cargarLocal();
+  inicializarSelectorSE();
+  inicializarFiltroSE();
   renderizar();
   await sincronizar();
 
@@ -47,6 +118,128 @@ async function init() {
   }
 }
 
+// ==================== Selector de SE en el formulario ====================
+function inicializarSelectorSE() {
+  const select = document.getElementById('se');
+  if (!select) return;
+
+  select.innerHTML = '';
+
+  const actual = getSEActual();
+  const ultimas = getUltimasSE(52); // hasta 1 año atrás
+
+  ultimas.forEach(item => {
+    const opt = document.createElement('option');
+    opt.value = `${item.se}|${item.anio}`;
+    opt.textContent = item.label + (item.se === actual.se && item.anio === actual.anio ? ' (actual)' : '');
+    select.appendChild(opt);
+  });
+
+  // Por defecto, seleccionar la SE actual
+  select.value = `${actual.se}|${actual.anio}`;
+
+  // Al cambiar la fecha, recalcular SE
+  const inputFecha = document.getElementById('fecha');
+  if (inputFecha) {
+    inputFecha.addEventListener('change', () => {
+      const f = inputFecha.value;
+      if (!f) return;
+      const { se, anio } = calcularSE(f);
+      // Verificar que no sea futura
+      if (!seEsMayorOIgual(actual.se, actual.anio, se, anio)) {
+        alert('⚠️ No se puede cargar un punto con una fecha futura. La SE seleccionada es mayor a la actual.');
+        inputFecha.value = '';
+        return;
+      }
+      const val = `${se}|${anio}`;
+      if (select.querySelector(`option[value="${val}"]`)) {
+        select.value = val;
+      }
+    });
+  }
+}
+
+// ==================== Filtro de SE en el mapa ====================
+function inicializarFiltroSE() {
+  const filtroSE = document.getElementById('filtro-se');
+  if (!filtroSE) return;
+
+  filtroSE.innerHTML = '';
+
+  // Opción: SE actual
+  const actual = getSEActual();
+  const optActual = document.createElement('option');
+  optActual.value = 'actual';
+  optActual.textContent = `🟢 SE actual (${formatSE(actual.se, actual.anio)})`;
+  filtroSE.appendChild(optActual);
+
+  // Opción: Últimas 4 SE
+  const opt4 = document.createElement('option');
+  opt4.value = 'ultimas4';
+  opt4.textContent = '📅 Últimas 4 SE';
+  filtroSE.appendChild(opt4);
+
+  // Opción: Todas
+  const optTodas = document.createElement('option');
+  optTodas.value = 'todas';
+  optTodas.textContent = '📊 Todas las SE';
+  filtroSE.appendChild(optTodas);
+
+  // Separador
+  const sep = document.createElement('option');
+  sep.disabled = true;
+  sep.textContent = '──────────';
+  filtroSE.appendChild(sep);
+
+  // Lista de SE específicas
+  const ultimas = getUltimasSE(26); // 6 meses atrás
+  ultimas.forEach(item => {
+    const opt = document.createElement('option');
+    opt.value = `${item.se}|${item.anio}`;
+    opt.textContent = item.label;
+    filtroSE.appendChild(opt);
+  });
+
+  // Por defecto: SE actual
+  filtroSE.value = 'actual';
+  filtroSE.addEventListener('change', renderizar);
+}
+
+/**
+ * Determina si un punto debe mostrarse según el filtro de SE actual
+ */
+function pasaFiltroSE(p) {
+  const filtroSE = document.getElementById('filtro-se')?.value || 'actual';
+  const actual = getSEActual();
+
+  // Si el punto no tiene SE asignada, usar su fecha para calcularla
+  let pSe = p.se;
+  let pAnio = p.anio;
+  if (!pSe || !pAnio) {
+    if (p.fecha) {
+      const calc = calcularSE(p.fecha);
+      pSe = calc.se;
+      pAnio = calc.anio;
+    } else {
+      return false; // sin fecha ni SE → ocultar
+    }
+  }
+
+  if (filtroSE === 'actual') {
+    return pSe === actual.se && pAnio === actual.anio;
+  }
+  if (filtroSE === 'ultimas4') {
+    const ultimas = getUltimasSE(4);
+    return ultimas.some(u => u.se === pSe && u.anio === pAnio);
+  }
+  if (filtroSE === 'todas') {
+    return true;
+  }
+  // SE específica: "se|anio"
+  const [seSel, anioSel] = filtroSE.split('|').map(Number);
+  return pSe === seSel && pAnio === anioSel;
+}
+
 // ==================== Local ====================
 function cargarLocal() {
   try {
@@ -60,15 +253,12 @@ function guardarLocal() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(puntos));
 }
 
-// ==================== Sincronización con Sheets (JSONP) ====================
+// ==================== JSONP ====================
 function jsonpGet(url) {
   return new Promise((resolve, reject) => {
     const callbackName = 'jsonp_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
     const script = document.createElement('script');
-    const timeout = setTimeout(() => {
-      cleanup();
-      reject(new Error('Timeout JSONP'));
-    }, 10000);
+    const timeout = setTimeout(() => { cleanup(); reject(new Error('Timeout JSONP')); }, 10000);
 
     function cleanup() {
       clearTimeout(timeout);
@@ -76,16 +266,8 @@ function jsonpGet(url) {
       if (script.parentNode) script.parentNode.removeChild(script);
     }
 
-    window[callbackName] = (data) => {
-      cleanup();
-      resolve(data);
-    };
-
-    script.onerror = () => {
-      cleanup();
-      reject(new Error('Error al cargar JSONP'));
-    };
-
+    window[callbackName] = (data) => { cleanup(); resolve(data); };
+    script.onerror = () => { cleanup(); reject(new Error('Error JSONP')); };
     script.src = `${url}${url.includes('?') ? '&' : '?'}callback=${callbackName}`;
     document.body.appendChild(script);
   });
@@ -109,16 +291,14 @@ async function sincronizar() {
   actualizarEstadoConexion();
 }
 
-// POST usa no-cors (respuesta opaca, igual se guarda)
 async function enviarAlServidor(action, payload) {
   try {
-    const res = await fetch(API_URL, {
+    await fetch(API_URL, {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({ action, apiKey: API_KEY, ...payload })
     });
-    // Con no-cors no podemos leer la respuesta, asumimos OK si no lanza error
     return { ok: true };
   } catch (err) {
     return { ok: false, error: err.message };
@@ -150,11 +330,14 @@ function renderizar() {
       iconAnchor: [9, 9]
     });
 
+    const seLabel = formatSE(p.se, p.anio);
+
     L.marker([p.lat, p.lng], { icon: icono })
       .bindPopup(`
         <strong>${escapeHtml(p.nombre)}</strong><br>
+        📅 <b>${seLabel}</b><br>
         🦟 Casos: <b>${p.casos}</b><br>
-        📅 ${p.fecha || 's/f'}<br>
+        📆 ${p.fecha || 's/f'}<br>
         📍 ${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}
         ${p.notas ? '<br>📝 ' + escapeHtml(p.notas) : ''}
       `)
@@ -162,12 +345,14 @@ function renderizar() {
   });
 
   capaCalor.setLatLngs(heatData);
-  actualizarContador(filtrados.length);
+  actualizarContador(filtrados.length, puntos.length);
 }
 
-function actualizarContador(n) {
+function actualizarContador(nVisible, nTotal) {
   const el = document.getElementById('contador-mapa');
-  if (el) el.textContent = `${n} punto${n !== 1 ? 's' : ''} visible${n !== 1 ? 's' : ''}`;
+  if (el) {
+    el.textContent = `${nVisible} de ${nTotal} punto${nTotal !== 1 ? 's' : ''} visible${nVisible !== 1 ? 's' : ''}`;
+  }
 }
 
 // ==================== Filtros ====================
@@ -179,6 +364,10 @@ function aplicarFiltros(lista) {
   const riesgo = document.getElementById('filtro-riesgo')?.value;
 
   return lista.filter(p => {
+    // Filtro de SE (principal)
+    if (!pasaFiltroSE(p)) return false;
+
+    // Filtros complementarios
     if (desde && p.fecha && p.fecha < desde) return false;
     if (hasta && p.fecha && p.fecha > hasta) return false;
     if (!isNaN(casosMin) && (p.casos || 0) < casosMin) return false;
@@ -207,6 +396,9 @@ function iniciarFiltros() {
         const el = document.getElementById(id);
         if (el) el.value = '';
       });
+    // Resetear SE a "actual"
+    const selSE = document.getElementById('filtro-se');
+    if (selSE) selSE.value = 'actual';
     renderizar();
   });
 }
@@ -259,6 +451,16 @@ function asignarEventos() {
 }
 
 async function agregarPunto() {
+  const seValor = document.getElementById('se').value;
+  const [se, anio] = seValor.split('|').map(Number);
+  const actual = getSEActual();
+
+  // Validar que no sea futura
+  if (!seEsMayorOIgual(actual.se, actual.anio, se, anio)) {
+    alert('⚠️ No se puede cargar un punto en una SE futura.');
+    return;
+  }
+
   const nuevo = {
     id: Date.now().toString(),
     nombre: document.getElementById('nombre').value.trim(),
@@ -266,7 +468,9 @@ async function agregarPunto() {
     lng: parseFloat(document.getElementById('lng').value),
     casos: parseInt(document.getElementById('casos').value, 10),
     fecha: document.getElementById('fecha').value,
-    notas: document.getElementById('notas').value.trim()
+    notas: document.getElementById('notas').value.trim(),
+    se: se,
+    anio: anio
   };
 
   if (isNaN(nuevo.lat) || isNaN(nuevo.lng)) return alert('Lat/Lng inválidas');
@@ -278,6 +482,8 @@ async function agregarPunto() {
 
   document.getElementById('form-punto').reset();
   document.getElementById('casos').value = 1;
+  // Restaurar SE actual
+  document.getElementById('se').value = `${actual.se}|${actual.anio}`;
 
   mostrarToast('⏳ Enviando a Google Sheets...');
 
@@ -285,10 +491,7 @@ async function agregarPunto() {
 
   if (r.ok) {
     mostrarToast('✅ Punto guardado en Google Sheets');
-    // Verificamos leyendo de nuevo tras un pequeño delay
-    setTimeout(async () => {
-      await sincronizar();
-    }, 1500);
+    setTimeout(async () => { await sincronizar(); }, 1500);
   } else {
     mostrarToast('⚠️ Guardado local. Error: ' + r.error, 'error');
   }
@@ -319,6 +522,17 @@ async function importarJSON(e) {
     try {
       const data = JSON.parse(ev.target.result);
       if (!Array.isArray(data)) throw new Error();
+
+      // Asegurar que cada punto tenga SE
+      data.forEach(p => {
+        if (!p.se || !p.anio) {
+          if (p.fecha) {
+            const calc = calcularSE(p.fecha);
+            p.se = calc.se;
+            p.anio = calc.anio;
+          }
+        }
+      });
 
       puntos = puntos.concat(data);
       guardarLocal();
