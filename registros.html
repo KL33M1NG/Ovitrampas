@@ -9,22 +9,23 @@
 </head>
 <body>
   <header>
-    <h1>📋 Registros de Ovitrampas - Lic. Soria Monica Paola 🌹</h1>
- <nav>
-  <a href="inicio.html">Inicio</a>
-  <a href="index.html">Mapa</a>
-  <a href="registros.html" class="active">Registros</a>
-  <a href="reportes.html">Reportes</a>
-  <button id="btn-ayuda-header" title="Ver tutorial">❓</button>
-</nav>
+    <h1>📋 Registros de Ovitrampas</h1>
+    <nav>
+      <a href="inicio.html">Inicio</a>
+      <a href="index.html">Mapa</a>
+      <a href="registros.html" class="active">Registros</a>
+      <a href="reportes.html">Reportes</a>
+      <button id="btn-ayuda-header" title="Ver tutorial">❓</button>
+    </nav>
   </header>
 
   <main class="contenedor-tabla">
     <div class="barra-acciones">
+      <select id="f-se" title="Semana Epidemiológica"></select>
       <input type="search" id="buscar" placeholder="🔍 Buscar por nombre...">
       <input type="date" id="f-desde" title="Desde">
       <input type="date" id="f-hasta" title="Hasta">
-      <input type="number" id="f-casos" placeholder="Casos mín." min="0" title="Casos mínimos">
+      <input type="number" id="f-casos" placeholder="Casos mín." min="0">
       <select id="f-riesgo">
         <option value="">Riesgo: Todos</option>
         <option value="alto">🔴 Alto (≥5)</option>
@@ -41,6 +42,7 @@
         <thead>
           <tr>
             <th>#</th>
+            <th>SE</th>
             <th>Nombre</th>
             <th>Latitud</th>
             <th>Longitud</th>
@@ -55,7 +57,6 @@
     </div>
   </main>
 
-  <!-- Modal de ayuda (desde botón ❓) -->
   <div id="modal-tutorial" class="modal-overlay oculto">
     <div class="modal-contenido">
       <button class="modal-cerrar" id="modal-cerrar">✕</button>
@@ -65,10 +66,10 @@
       <div class="modal-body">
         <p>Para ver el tutorial completo, andá a la pestaña <a href="inicio.html"><strong>Inicio</strong></a>.</p>
         <ul>
+          <li><strong>Filtro SE:</strong> por defecto muestra todas. Podés filtrar por SE actual, últimas 4 o una específica.</li>
           <li><strong>Ver:</strong> te lleva al mapa centrado en el punto.</li>
           <li><strong>Eliminar:</strong> borra el registro en Google Sheets.</li>
-          <li><strong>⬇ CSV:</strong> exporta los registros filtrados.</li>
-          <li><strong>🔄:</strong> recarga los datos desde el servidor.</li>
+          <li><strong>⬇ CSV:</strong> exporta con columna de SE incluida.</li>
         </ul>
       </div>
       <div class="modal-footer">
