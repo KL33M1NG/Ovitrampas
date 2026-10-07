@@ -305,4 +305,221 @@ async function generarPDF() {
     const seFiltro = document.getElementById('rep-se').value;
     if (seFiltro === 'actual') filtrosAplicados.push(`SE actual (${formatSE(getSEActual().se, getSEActual().anio)})`);
     else if (seFiltro === 'ultimas4') filtrosAplicados.push('Últimas 4 SE');
-    else if (seFiltro === 'todas') filtrosAplicados.push
+    else if (seFiltro === 'todas') filtrosAplicados.push('Todas las SE');
+    else {
+      const [s, a] = seFiltro.split('|').map(Number);
+      filtrosAplicados.push(formatSE(s, a));
+    }
+
+    const desde = document.getElementById('rep-desde').value;
+    const hasta = document.getElementById('rep-hasta').value;
+    const casosMin = document.getElementById('rep-casos').value;
+    const texto = document.getElementById('rep-texto').value.trim();
+    const riesgo = document.getElementById('rep-riesgo').value;
+    if (desde) filtrosAplicados.push(`Desde: ${desde}`);
+    if (hasta) filtrosAplicados.push(`Hasta: ${hasta}`);
+    if (casosMin) filtrosAplicados.push(`Casos mínimos: ${casosMin}`);
+    if (texto) filtrosAplicados.push(`Búsqueda: "${texto}"`);
+    if (riesgo) filtrosAplicados.push(`Riesgo: ${riesgo}`);
+
+    doc.setFontSize(8);
+    doc.setTextColor(100, 100, 100);
+    doc.text('Filtros: ' + filtrosAplicados.join(' · '), margen, y);
+    y += 6;
+
+    if (document.getElementById('rep-incluir-resumen').checked) {
+      const r = calcularResumen();
+      doc.setFillColor(240, 247, 250);
+      doc.rect(margen, y, ancho - 2 * margen, 22, 'F');
+      doc.setFontSize(10);
+      doc.setTextColor(27, 73, 101);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Resumen Estadístico', margen + 4, y + 5);
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(50, 50, 50);
+      const cols = [
+        `Puntos: ${r.total}`,
+        `Casos totales: ${r.casosTotales}`,
+        `Promedio: ${r.promedio}`,
+        `🔴 Alto: ${r.alto}`,
+        `🟠 Medio: ${r.medio}`,
+        `🟢 Bajo: ${r.bajo}`
+      ];
+      const colWidth = (ancho - 2 * margen - 8) / 3;
+      cols.forEach((txt, i) => {
+        const col = i % 3;
+        const row = Math.floor(i / 3);
+        doc.text(txt, margen + 4 + col * colWidth, y + 12 + row * 5);
+      });
+      y += 28;
+    }
+
+    if (document.getElementById('rep-incluir-mapa').checked) {
+      const captura = await capturarMapa();
+      const imgWidth = ancho - 2 * margen;
+      const mapEl = document.getElementById('map-reporte');
+      const ratio = mapEl.offsetHeight / mapEl.offsetWidth;
+      let imgHeight = imgWidth * ratio;
+      const maxHeight = alto - y - 20;
+      if (imgHeight > maxHeight) imgHeight = maxHeight;
+      if (y + imgHeight + 10 > alto - margen) { doc.addPage(); y = margen; }
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(27, 73, 101);
+      doc.text('Mapa de calor', margen, y);
+      y += 4;
+      doc.addImage(captura, 'PNG', margen, y, imgWidth, imgHeight);
+      y += imgHeight + 8;
+    }
+
+    if (document.getElementById('rep-incluir-tabla').checked) {
+      doc.addPage();
+      y = margen;
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(27, 73, 101);
+      doc.text('Detalle de puntos registrados', margen, y);
+      y += 6;
+
+      const cols = [
+        { label: 'SE', w: 22 },
+        { label: 'Nombre', w: 38 },
+        { label: 'Lat', w: 20 },
+        { label: 'Lng', w: 20 },
+        { label: 'Casos', w: 14 },
+        { label: 'Fecha', w: 20 },
+        { label: 'Riesgo', w: 16 },
+        { label: 'Notas', w: ancho - 2 * margen - 22 - 38 - 20 - 20 - 14 - 20 - 16 }
+      ];
+      const rowHeight = 6;
+      const lineHeight = 4;
+
+      function dibujarEncabezado() {
+        doc.setFillColor(27, 73, 101);
+        doc.rect(margen, y, ancho - 2 * margen, rowHeight, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'bold');
+        let x = margen + 1;
+        cols.forEach(c => { doc.text(c.label, x, y + 4); x += c.w; });
+        y += rowHeight;
+      }
+
+      dibujarEncabezado();
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(40, 40, 40);
+      doc.setFontSize(7.5);
+
+      // Ordenar por SE descendente
+      filtrados.sort((a, b) => {
+        const aSe = (a.anio || 0) * 100 + (a.se || 0);
+        const bSe = (b.anio || 0) * 100 + (b.se || 0);
+        return bSe - aSe;
+      });
+
+      filtrados.forEach((p, idx) => {
+        const notasTexto = p.notas || '—';
+        const notasLineas = doc.splitTextToSize(notasTexto, cols[7].w - 2);
+        const altoFila = Math.max(rowHeight, notasLineas.length * lineHeight + 2);
+
+        if (y + altoFila > alto - margen) {
+          doc.addPage();
+          y = margen;
+          dibujarEncabezado();
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(40, 40, 40);
+          doc.setFontSize(7.5);
+        }
+
+        if (idx % 2 === 0) {
+          doc.setFillColor(245, 248, 250);
+          doc.rect(margen, y, ancho - 2 * margen, altoFila, 'F');
+        }
+
+        let riesgoTxt = 'Bajo';
+        if (p.casos >= 5) riesgoTxt = 'Alto';
+        else if (p.casos >= 3) riesgoTxt = 'Medio';
+
+        const fila = [
+          formatSE(p.se, p.anio),
+          p.nombre,
+          Number(p.lat).toFixed(4),
+          Number(p.lng).toFixed(4),
+          String(p.casos),
+          p.fecha || '—',
+          riesgoTxt,
+          notasTexto
+        ];
+
+        let x = margen + 1;
+        doc.text(fila[0], x, y + 4); x += cols[0].w;
+        const nombreLineas = doc.splitTextToSize(fila[1], cols[1].w - 2);
+        doc.text(nombreLineas[0], x, y + 4); x += cols[1].w;
+        doc.text(fila[2], x, y + 4); x += cols[2].w;
+        doc.text(fila[3], x, y + 4); x += cols[3].w;
+        doc.text(fila[4], x, y + 4); x += cols[4].w;
+        doc.text(fila[5], x, y + 4); x += cols[5].w;
+
+        if (riesgoTxt === 'Alto') doc.setTextColor(213, 62, 79);
+        else if (riesgoTxt === 'Medio') doc.setTextColor(244, 109, 67);
+        else doc.setTextColor(42, 157, 143);
+        doc.text(fila[6], x, y + 4);
+        doc.setTextColor(40, 40, 40);
+        x += cols[6].w;
+
+        notasLineas.forEach((linea, i) => {
+          doc.text(linea, x, y + 4 + i * lineHeight);
+        });
+
+        doc.setDrawColor(220, 220, 220);
+        doc.line(margen, y + altoFila, ancho - margen, y + altoFila);
+        y += altoFila;
+      });
+    }
+
+    const observaciones = document.getElementById('rep-observaciones').value.trim();
+    if (observaciones) {
+      if (y + 30 > alto - margen) { doc.addPage(); y = margen; }
+      y += 8;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(27, 73, 101);
+      doc.text('Observaciones', margen, y);
+      y += 5;
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(50, 50, 50);
+      const lineas = doc.splitTextToSize(observaciones, ancho - 2 * margen);
+      doc.text(lineas, margen, y);
+    }
+
+    const totalPaginas = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPaginas; i++) {
+      doc.setPage(i);
+      doc.setFontSize(7);
+      doc.setTextColor(150, 150, 150);
+      doc.text(
+        `Sistema de Ovitrampas - ${fechaGen} - Página ${i} de ${totalPaginas}`,
+        ancho / 2, alto - 6, { align: 'center' }
+      );
+    }
+
+    const nombreArchivo = `reporte_ovitrampas_${new Date().toISOString().slice(0, 10)}.pdf`;
+    doc.save(nombreArchivo);
+
+  } catch (err) {
+    console.error(err);
+    alert('❌ Error al generar el PDF: ' + err.message);
+  } finally {
+    btn.textContent = textoOriginal;
+    btn.disabled = false;
+  }
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+document.addEventListener('DOMContentLoaded', init);
