@@ -168,12 +168,14 @@ function renderizar() {
     return;
   }
 
-  // Ordenar por SE descendente y luego por nombre
+// Ordenar por SE descendente y luego por nombre (seguro ante nulls)
   filtrados.sort((a, b) => {
-    const aSe = a.anio * 100 + (a.se || 0);
-    const bSe = b.anio * 100 + (b.se || 0);
+    const aSe = (Number(a.anio) || 0) * 100 + (Number(a.se) || 0);
+    const bSe = (Number(b.anio) || 0) * 100 + (Number(b.se) || 0);
     if (aSe !== bSe) return bSe - aSe;
-    return a.nombre.localeCompare(b.nombre);
+    const aNom = String(a.nombre || '').toLowerCase();
+    const bNom = String(b.nombre || '').toLowerCase();
+    return aNom.localeCompare(bNom);
   });
 
   filtrados.forEach((p, i) => {
