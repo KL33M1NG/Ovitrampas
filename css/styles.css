@@ -829,3 +829,66 @@ td.acciones button {
   .panel-reportes { border-right: none; border-bottom: 1px solid #ddd; max-height: none; }
   #map-reporte { height: 60vh; min-height: 400px; }
 }
+
+/* ============================================================
+   SELECTOR DE SEMANA EPIDEMIOLÓGICA
+   ============================================================ */
+.grupo-config select,
+#se,
+#filtro-se,
+#f-se,
+#rep-se {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: .88rem;
+  background: white;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+#se:focus,
+#filtro-se:focus,
+#f-se:focus,
+#rep-se:focus {
+  outline: none;
+  border-color: #62b6cb;
+  box-shadow: 0 0 0 3px rgba(98,182,203,.2);
+}
+
+/* Etiqueta SE en tabla */
+.tabla-wrapper td:nth-child(2) {
+  color: #1b4965;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Botones de atajo SE */
+.atajos-se {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+.atajos-se button {
+  flex: 1;
+  padding: 6px 10px;
+  font-size: .78rem;
+  background: #e8f1f5;
+  color: #1b4965;
+  border: 1px solid #c8dde4;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  margin: 0;
+  min-width: 70px;
+}
+.atajos-se button:hover {
+  background: #d0e5ec;
+}
+.atajos-se button.activo {
+  background: #1b4965;
+  color: white;
+  border-color: #1b4965;
+}
