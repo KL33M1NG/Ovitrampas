@@ -10,14 +10,14 @@
 </head>
 <body>
   <header>
-    <h1>🦟 Mapa de Calor - Ovitrampas (Dengue) - Lic. Soria Monica Paola 🌹</h1>
-   <nav>
-  <a href="inicio.html">Inicio</a>
-  <a href="index.html" class="active">Mapa</a>
-  <a href="registros.html">Registros</a>
-  <a href="reportes.html">Reportes</a>
-  <button id="btn-ayuda-header" title="Ver tutorial">❓</button>
-</nav>
+    <h1>🦟 Mapa de Calor - Ovitrampas (Dengue)</h1>
+    <nav>
+      <a href="inicio.html">Inicio</a>
+      <a href="index.html" class="active">Mapa</a>
+      <a href="registros.html">Registros</a>
+      <a href="reportes.html">Reportes</a>
+      <button id="btn-ayuda-header" title="Ver tutorial">❓</button>
+    </nav>
   </header>
 
   <main class="contenedor">
@@ -39,6 +39,9 @@
         <label>Fecha:
           <input type="date" id="fecha" required>
         </label>
+        <label>Semana Epidemiológica:
+          <select id="se" required></select>
+        </label>
         <label>Notas (opcional):
           <textarea id="notas" rows="2"></textarea>
         </label>
@@ -48,13 +51,16 @@
 
       <div class="controles">
         <h3>🔍 Filtros</h3>
+        <label>Semana Epidemiológica:
+          <select id="filtro-se"></select>
+        </label>
         <label>Buscar por nombre:
           <input type="search" id="filtro-texto" placeholder="Ej: Norte...">
         </label>
-        <label>Desde:
+        <label>Desde (fecha):
           <input type="date" id="filtro-desde">
         </label>
-        <label>Hasta:
+        <label>Hasta (fecha):
           <input type="date" id="filtro-hasta">
         </label>
         <label>Casos mínimos:
@@ -92,7 +98,6 @@
     <div id="map"></div>
   </main>
 
-  <!-- Modal de ayuda (desde botón ❓) -->
   <div id="modal-tutorial" class="modal-overlay oculto">
     <div class="modal-contenido">
       <button class="modal-cerrar" id="modal-cerrar">✕</button>
@@ -102,9 +107,9 @@
       <div class="modal-body">
         <p>Para ver el tutorial completo, andá a la pestaña <a href="inicio.html"><strong>Inicio</strong></a>.</p>
         <ul>
-          <li><strong>Agregar punto:</strong> completá el formulario del panel izquierdo.</li>
-          <li><strong>Mapa de calor:</strong> los colores van de azul (pocos casos) a rojo (muchos).</li>
-          <li><strong>Filtros:</strong> usá los campos de fecha, casos y riesgo.</li>
+          <li><strong>Semana Epidemiológica:</strong> elegí la SE correspondiente (solo hasta la actual).</li>
+          <li><strong>Filtro de SE:</strong> por defecto muestra solo la SE actual. Cambialo para ver otras.</li>
+          <li><strong>Filtros:</strong> fecha, casos y riesgo complementan el filtro de SE.</li>
           <li><strong>Sincronizar:</strong> clic en 🔄 para traer los últimos datos del servidor.</li>
         </ul>
       </div>
