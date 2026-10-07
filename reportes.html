@@ -42,6 +42,9 @@
 
       <div class="grupo-config">
         <h3>🔍 Filtrar puntos incluidos</h3>
+        <label>Semana Epidemiológica:
+          <select id="rep-se"></select>
+        </label>
         <label>Buscar por nombre:
           <input type="search" id="rep-texto" placeholder="Ej: Norte...">
         </label>
@@ -103,11 +106,10 @@
         <h2>👁️ Vista previa del reporte</h2>
         <p class="info-vista">Esta es la captura que se incluirá en el PDF. Podés mover/zoom el mapa antes de generar.</p>
       </div>
-     <div id="map-reporte"></div>
+      <div id="map-reporte"></div>
     </section>
   </main>
 
-  <!-- Modal de ayuda -->
   <div id="modal-tutorial" class="modal-overlay oculto">
     <div class="modal-contenido">
       <button class="modal-cerrar" id="modal-cerrar">✕</button>
@@ -117,7 +119,7 @@
       <div class="modal-body">
         <ul>
           <li>Configurá el título e institución del reporte.</li>
-          <li>Filtrá los puntos que querés incluir.</li>
+          <li>Filtrá los puntos por <strong>Semana Epidemiológica</strong> y otros criterios.</li>
           <li>Ajustá el mapa (zoom/posición) como quieras que aparezca.</li>
           <li>Clic en <strong>📄 Generar PDF</strong> para descargar.</li>
         </ul>
