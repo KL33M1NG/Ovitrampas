@@ -168,7 +168,7 @@ function renderizar() {
     return;
   }
 
-// Ordenar por SE descendente y luego por nombre (seguro ante nulls)
+  // Ordenar por SE descendente y luego por nombre (seguro ante nulls)
   filtrados.sort((a, b) => {
     const aSe = (Number(a.anio) || 0) * 100 + (Number(a.se) || 0);
     const bSe = (Number(b.anio) || 0) * 100 + (Number(b.se) || 0);
@@ -181,15 +181,22 @@ function renderizar() {
   filtrados.forEach((p, i) => {
     const tr = document.createElement('tr');
     const seLabel = formatSE(p.se, p.anio);
+    const nombreSeguro = escapeHtml(p.nombre || '(sin nombre)');
+    const notasSeguro = escapeHtml(p.notas || '—');
+    const latNum = Number(p.lat);
+    const lngNum = Number(p.lng);
+    const latTxt = isNaN(latNum) ? '—' : latNum.toFixed(5);
+    const lngTxt = isNaN(lngNum) ? '—' : lngNum.toFixed(5);
+
     tr.innerHTML = `
       <td>${i + 1}</td>
       <td><strong>${seLabel}</strong></td>
-      <td>${escapeHtml(p.nombre)}</td>
-      <td>${Number(p.lat).toFixed(5)}</td>
-      <td>${Number(p.lng).toFixed(5)}</td>
-      <td><strong>${p.casos}</strong></td>
+      <td>${nombreSeguro}</td>
+      <td>${latTxt}</td>
+      <td>${lngTxt}</td>
+      <td><strong>${p.casos || 0}</strong></td>
       <td>${p.fecha || '—'}</td>
-      <td>${escapeHtml(p.notas || '—')}</td>
+      <td>${notasSeguro}</td>
       <td class="acciones">
         <button class="btn-ver" data-id="${p.id}">Ver</button>
         <button class="btn-eliminar" data-id="${p.id}">Eliminar</button>
@@ -204,7 +211,6 @@ function renderizar() {
     b.addEventListener('click', () => eliminar(b.dataset.id))
   );
 }
-
 // ==================== Acciones ====================
 function verEnMapa(id) {
   sessionStorage.setItem('centrar_punto', id);
